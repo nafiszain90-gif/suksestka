@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif Numerasi & Literasi Matematika SMP</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navbar -->
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-calculator text-2xl text-amber-300"></i>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight sm:text-xl">Asesmen Numerasi & Literasi</h1>
+                    <p class="text-xs text-indigo-200 hidden sm:block">Matematika SMP - Berdasarkan Matriks Kurikulum</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="bg-indigo-800/80 px-3 py-1.5 rounded-lg flex items-center space-x-2 border border-indigo-600">
+                    <i class="fa-regular fa-clock text-amber-300"></i>
+                    <span id="timer-display" class="font-mono font-semibold text-sm sm:text-base">00:00:00</span>
+                </div>
+                <button onclick="finishQuizConfirmation()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-3 py-1.5 rounded-lg text-sm transition shadow-sm">
+                    Selesai
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <!-- Sidebar / Question Navigation Matrix -->
+            <div class="lg:col-span-1 order-2 lg:order-1">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sticky top-20">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-bold text-slate-700 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-indigo-600"></i> Navigasi Soal
+                        </h2>
+                        <span id="progress-text" class="text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full">0/25 Terjawab</span>
+                    </div>
+
+                    <!-- Number Grid -->
+                    <div id="nav-grid" class="grid grid-cols-5 gap-2 custom-scrollbar max-h-[320px] overflow-y-auto p-1">
+                        <!-- Dynamically Generated via JS -->
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="mt-5 pt-4 border-t border-slate-100 text-xs space-y-2 text-slate-600">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded bg-indigo-600 inline-block"></span> Soal Aktif
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded bg-emerald-500 inline-block"></span> Dijawab
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded bg-slate-200 border border-slate-300 inline-block"></span> Belum Dijawab
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question & Interactive Area -->
+            <div class="lg:col-span-3 order-1 lg:order-2">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 min-h-[500px] flex flex-col justify-between">
+                    
+                    <div>
+                        <!-- Question Header Meta -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4 mb-6">
+                            <div class="flex items-center gap-2">
+                                <span id="question-number-badge" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">
+                                    Soal 1 dari 25
+                                </span>
+                                <span id="question-topic-badge" class="bg-slate-100 text-slate-700 text-xs font-medium px-3 py-1 rounded-full">
+                                    Bilangan
+                                </span>
+                            </div>
+                            <span id="question-type-badge" class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
+                                Pilihan Ganda
+                            </span>
+                        </div>
+
+                        <!-- Question Body -->
+                        <div id="question-text" class="text-slate-800 text-base sm:text-lg font-medium leading-relaxed mb-6">
+                            <!-- Question text injected here -->
+                        </div>
+
+                        <!-- Interactive Input / Options Container -->
+                        <div id="options-container" class="space-y-3 mb-6">
+                            <!-- Options injected here dynamically -->
+                        </div>
+
+                        <!-- Discussion / Explanation Container (Hidden by default) -->
+                        <div id="explanation-box" class="hidden mt-6 p-5 rounded-xl border">
+                            <!-- Discussion text injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Control & Navigation Buttons -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 mt-8 pt-4 border-t border-slate-100">
+                        <button id="prev-btn" onclick="navigateQuestion(-1)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-arrow-left"></i> Sebelumnya
+                        </button>
+
+                        <div class="flex items-center gap-3">
+                            <button id="submit-ans-btn" onclick="submitAnswer()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-md transition flex items-center gap-2">
+                                <i class="fa-solid fa-check"></i> Periksa Jawaban
+                            </button>
+                            <button id="next-btn" onclick="navigateQuestion(1)" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-xl text-sm transition flex items-center gap-2">
+                                Selanjutnya <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Summary / Result Overlay -->
+    <div id="result-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col justify-between">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full text-indigo-600 mb-3 text-2xl">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Hasil Asesmen Anda</h2>
+                <p class="text-slate-500 text-sm">Evaluasi Capaian Numerasi & Literasi Matematika</p>
+            </div>
+
+            <!-- Score Stats Grid -->
+            <div class="grid grid-cols-3 gap-3 mb-6 text-center">
+                <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl">
+                    <p class="text-xs text-indigo-600 font-semibold uppercase">Skor Akhir</p>
+                    <p id="final-score" class="text-2xl sm:text-3xl font-extrabold text-indigo-700 mt-1">0</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
+                    <p class="text-xs text-emerald-600 font-semibold uppercase">Benar</p>
+                    <p id="correct-count" class="text-2xl sm:text-3xl font-extrabold text-emerald-700 mt-1">0</p>
+                </div>
+                <div class="bg-rose-50 border border-rose-100 p-4 rounded-2xl">
+                    <p class="text-xs text-rose-600 font-semibold uppercase">Salah / Kosong</p>
+                    <p id="incorrect-count" class="text-2xl sm:text-3xl font-extrabold text-rose-700 mt-1">0</p>
+                </div>
+            </div>
+
+            <!-- Evaluation Note -->
+            <div id="evaluation-message" class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-700 mb-6 text-center">
+                <!-- Evaluation message -->
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button onclick="closeResultModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition">
+                    Tinjau Kembali Soal
+                </button>
+                <button onclick="restartQuiz()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition shadow-lg">
+                    Coba Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            &copy; Asesmen Interaktif Numerasi Matematika SMP. Sesuai dengan Standar Matriks Capaian Pembelajaran.
+        </div>
+    </footer>
+
+    <script>
+        // 25 Questions Database matching the Assessment Matrix
+        const questionsData = [
+            // --- ELEMEN 1: BILANGAN (Soal 1-6) ---
+            {
+                id: 1,
+                topic: "Bilangan",
+                type: "mcq", // Multiple Choice
+                question: "Suhu udara di dalam ruang pendingin laboratorium mula-mula adalah \\(-4^\\circ\\text{C}\\). Ketika mesin pendingin dimatikan, suhu naik \\(3^\\circ\\text{C}\\) setiap 5 menit. Suhu di dalam ruang pendingin tersebut setelah dimatikan selama 25 menit adalah...",
+                options: ["\\(5^\\circ\\text{C}\\)", "\\(11^\\circ\\text{C}\\)", "\\(15^\\circ\\text{C}\\)", "\\(19^\\circ\\text{C}\\)"],
+                correctAnswer: 1, // index 1 = 11°C
+                explanation: "Total kenaikan suhu = \\(\\frac{25}{5} \\times 3^\\circ\\text{C} = 5 \\times 3^\\circ\\text{C} = 15^\\circ\\text{C}\\).<br>Suhu akhir = \\(-4^\\circ\\text{C} + 15^\\circ\\text{C} = 11^\\circ\\text{C}\\)."
+            },
+            {
+                id: 2,
+                topic: "Bilangan",
+                type: "essay", // Short Answer
+                question: "Bentuk sederhana dari ekspresi bilangan berpangkat dan akar berikut: \\(\\sqrt{48} + 3\\sqrt{12} - 2\\sqrt{27}\\) adalah \\(a\\sqrt{3}\\). Berapakah nilai dari \\(a\\)? (Tuliskan angka bulat saja)",
+                correctAnswer: "4",
+                explanation: "\\(\\sqrt{48} = \\sqrt{16 \\times 3} = 4\\sqrt{3}\\)<br>\\(3\\sqrt{12} = 3(2\\sqrt{3}) = 6\\sqrt{3}\\)<br>\\(2\\sqrt{27} = 2(3\\sqrt{3}) = 6\\sqrt{3}\\)<br>Maka, \\(4\\sqrt{3} + 6\\sqrt{3} - 6\\sqrt{3} = 4\\sqrt{3}\\). Nilai \\(a = 4\\)."
+            },
+            {
+                id: 3,
+                topic: "Bilangan",
+                type: "tf", // True/False matrix
+                question: "Bu Rahma membeli sebuah laptop seharga Rp6.000.000,00. Karena pembayaran tunai, beliau mendapatkan diskon sebesar 15%. Kemudian laptop tersebut ia jual kembali kepada temannya dengan harga Rp5.300.000,00. Tentukan kebenaran dari pernyataan-pernyataan berikut:",
+                statements: [
+                    { text: "Harga laptop setelah mendapatkan diskon saat dibeli Bu Rahma adalah Rp5.100.000,00.", answer: true },
+                    { text: "Bu Rahma mengalami kerugian dari transaksi penjualan kembali laptop tersebut.", answer: false },
+                    { text: "Persentase keuntungan yang diperoleh Bu Rahma dari harga beli bersih adalah sekitar 3,92%.", answer: true }
+                ],
+                explanation: "Diskon = \\(15\\% \\times 6.000.000 = 900.000\\).<br>Harga Beli = \\(6.000.000 - 900.000 = 5.100.000\\) (Pernyataan 1 BENAR).<br>Harga Jual = 5.300.000. Karena Harga Jual > Harga Beli, Bu Rahma UNTUNG (Pernyataan 2 SALAH).<br>Keuntungan = \\(5.300.000 - 5.100.000 = 200.000\\).<br>Persentase Untung = \\(\\frac{200.000}{5.100.000} \\times 100\\% \\approx 3,92\\%\\) (Pernyataan 3 BENAR)."
+            },
+            {
+                id: 4,
+                topic: "Bilangan",
+                type: "mcq",
+                question: "Bentuk baku (notasi ilmiah) dari massa bumi yang diperkirakan sebesar \\(5.972.000.000.000.000.000.000.000\\text{ kg}\\) adalah...",
+                options: [
+                    "\\(5,972 \\times 10^{24}\\text{ kg}\\)",
+                    "\\(59,72 \\times 10^{23}\\text{ kg}\\)",
+                    "\\(5,972 \\times 10^{21}\\text{ kg}\\)",
+                    "\\(0,5972 \\times 10^{25}\\text{ kg}\\)"
+                ],
+                correctAnswer: 0,
+                explanation: "Bentuk baku dituliskan sebagai \\(a \\times 10^n\\) dengan \\(1 \\le a < 10\\). Dengan memindahkan koma sebanyak 24 tempat ke kiri, diperoleh \\(5,972 \\times 10^{24}\\)."
+            },
+            {
+                id: 5,
+                topic: "Bilangan",
+                type: "essay",
+                question: "Pak Eko membagikan uang warisan senilai Rp120.000.000,00 kepada tiga anaknya. Anak pertama mendapat \\(\\frac{3}{8}\\) bagian, anak kedua mendapat \\(\\frac{1}{3}\\) bagian, dan sisanya untuk anak ketiga. Berapakah jumlah uang (dalam rupiah) yang diterima anak ketiga? (Isi angka saja tanpa titik/rupiah)",
+                correctAnswer: "35000000",
+                explanation: "Anak 1 = \\(\\frac{3}{8} \\times 120.000.000 = 45.000.000\\).<br>Anak 2 = \\(\\frac{1}{3} \\times 120.000.000 = 40.000.000\\).<br>Anak 3 = \\(120.000.000 - (45.000.000 + 40.000.000) = 35.000.000\\)."
+            },
+            {
+                id: 6,
+                topic: "Bilangan",
+                type: "mcq",
+                question: "Sebuah proyek pembangunan jembatan diperkirakan selesai dalam waktu 40 hari oleh 18 orang pekerja. Jika proyek ingin diselesaikan dalam waktu 30 hari, berapakah tambahan pekerja yang dibutuhkan?",
+                options: ["6 orang", "8 orang", "24 orang", "30 orang"],
+                correctAnswer: 0,
+                explanation: "Menggunakan perbandingan berbalik nilai:<br>\\(30 \\times x = 40 \\times 18 \\implies 30x = 720 \\implies x = 24\\text{ pekerja}\\).<br>Tambahan pekerja = \\(24 - 18 = 6\\text{ orang}\\)."
+            },
+
+            // --- ELEMEN 2: ALJABAR (Soal 7-13) ---
+            {
+                id: 7,
+                topic: "Aljabar",
+                type: "mcq",
+                question: "Himpunan penyelesaian dari pertidaksamaan linear satu variabel \\(3(x - 2) \\le 5x + 8\\) untuk \\(x \\in \\mathbb{R}\\) adalah...",
+                options: [
+                    "\\(x \\ge -7\\)",
+                    "\\(x \\le -7\\)",
+                    "\\(x \\ge 7\\)",
+                    "\\(x \\le 1\\)"
+                ],
+                correctAnswer: 0,
+                explanation: "\\(3x - 6 \\le 5x + 8\\)<br>\\(3x - 5x \\le 8 + 6\\)<br>\\(-2x \\le 14\\)<br>Sebab dibagi bilangan negatif (-2), tanda pertidaksamaan berbalik: \\(x \\ge -7\\)."
+            },
+            {
+                id: 8,
+                topic: "Aljabar",
+                type: "essay",
+                question: "Harga 3 buku tulis dan 2 pensil adalah Rp16.500,00. Sedangkan harga 2 buku tulis dan 4 pensil adalah Rp15.000,00. Berapakah harga 1 buah buku tulis? (Isi angka saja)",
+                correctAnswer: "4500",
+                explanation: "Misal buku = \\(x\\), pensil = \\(y\\).<br>\\(3x + 2y = 16.500\\) (kalikan 2) \\(\\rightarrow 6x + 4y = 33.000\\)<br>\\(2x + 4y = 15.000\\)<br>Eliminasi: \\(4x = 18.000 \\implies x = 4.500\\). Jadi harga 1 buku tulis = Rp4.500,00."
+            },
+            {
+                id: 9,
+                topic: "Aljabar",
+                type: "tf",
+                question: "Diketahui sebuah fungsi linear \\(f(x) = ax + b\\). Jika \\(f(2) = 7\\) dan \\(f(-1) = -2\\), tentukan kebenaran dari pernyataan berikut:",
+                statements: [
+                    { text: "Nilai gradien/kemiringan garis (a) adalah 3.", answer: true },
+                    { text: "Nilai konstanta b adalah 2.", answer: false },
+                    { text: "Nilai dari f(5) adalah 16.", answer: true }
+                ],
+                explanation: "\\(2a + b = 7\\) dan \\(-a + b = -2\\). Eliminasi: \\(3a = 9 \\implies a = 3\\) (Pernyataan 1 BENAR).<br>Substitusi \\(a=3\\): \\(2(3) + b = 7 \\implies b = 1\\) (Pernyataan 2 SALAH karena b=1).<br>Rumus fungsi: \\(f(x) = 3x + 1\\). Maka \\(f(5) = 3(5) + 1 = 16\\) (Pernyataan 3 BENAR)."
+            },
+            {
+                id: 10,
+                topic: "Aljabar",
+                type: "mcq",
+                question: "Suku ke-n dari suatu barisan aritmetika dinyatakan dengan rumus \\(U_n = 5n - 3\\). Suku ke-20 dari barisan tersebut dan jumlah 10 suku pertamanya berturut-turut adalah...",
+                options: [
+                    "97 dan 245",
+                    "97 dan 270",
+                    "103 dan 245",
+                    "100 dan 250"
+                ],
+                correctAnswer: 0,
+                explanation: "\\(U_{20} = 5(20) - 3 = 97\\).<br>Suku pertama \\(a = U_1 = 5(1)-3 = 2\\). Suku ke-10 \\(U_{10} = 5(10)-3 = 47\\).<br>\\(S_{10} = \\frac{10}{2}(a + U_{10}) = 5(2 + 47) = 5(49) = 245\\)."
+            },
+            {
+                id: 11,
+                topic: "Aljabar",
+                type: "essay",
+                question: "Hasil pemfaktoran dari persamaan kuadrat \\(2x^2 + 7x + 3 = 0\\) adalah \\((2x + a)(x + b) = 0\\). Berapakah nilai dari \\(a + b\\)?",
+                correctAnswer: "4",
+                explanation: "\\(2x^2 + 7x + 3 = (2x + 1)(x + 3)\\).<br>Sehingga \\(a = 1\\) dan \\(b = 3\\).<br>Nilai \\(a + b = 1 + 3 = 4\\)."
+            },
+            {
+                id: 12,
+                topic: "Aljabar",
+                type: "tf",
+                question: "Seorang amuba membelah diri menjadi 2 setiap 15 menit. Jika pada awal pengamatan terdapat 10 amuba, tentukan kebenaran dari pernyataan berikut:",
+                statements: [
+                    { text: "Banyaknya amuba membentuk pola barisan geometri dengan rasio r = 2.", answer: true },
+                    { text: "Setelah 1 jam (60 menit), terjadi 3 kali pembelahan.", answer: false },
+                    { text: "Banyak amuba setelah 1 jam adalah 160 amuba.", answer: true }
+                ],
+                explanation: "Rasio pembelahan = 2 (Pernyataan 1 BENAR).<br>Dalam 60 menit, jumlah pembelahan \\(n = \\frac{60}{15} = 4\\) kali (Pernyataan 2 SALAH).<br>Jumlah amuba \\(N = 10 \\times 2^4 = 10 \\times 16 = 160\\) amuba (Pernyataan 3 BENAR)."
+            },
+            {
+                id: 13,
+                topic: "Aljabar",
+                type: "mcq",
+                question: "Bentuk sederhana dari ekspresi aljabar \\(\\frac{x^2 - 9}{x^2 + 5x + 6}\\) adalah...",
+                options: [
+                    "\\(\\frac{x - 3}{x + 2}\\)",
+                    "\\(\\frac{x + 3}{x + 2}\\)",
+                    "\\(\\frac{x - 3}{x + 3}\\)",
+                    "\\(\\frac{x - 9}{5x + 6}\\)"
+                ],
+                correctAnswer: 0,
+                explanation: "Pembilang: \\(x^2 - 9 = (x - 3)(x + 3)\\).<br>Penyebut: \\(x^2 + 5x + 6 = (x + 2)(x + 3)\\).<br>Bentuk sederhana = \\(\\frac{(x - 3)(x + 3)}{(x + 2)(x + 3)} = \\frac{x - 3}{x + 2}\\)."
+            },
+
+            // --- ELEMEN 3: GEOMETRI DAN PENGUKURAN (Soal 14-19) ---
+            {
+                id: 14,
+                topic: "Geometri & Pengukuran",
+                type: "mcq",
+                question: "Sebuah tiang bendera setinggi 12 meter tegak lurus di atas tanah datar. Dari ujung atas tiang ditarik kawat lurus ke sebuah patok di tanah. Jika jarak patok ke pangkal bawah tiang adalah 5 meter, panjang kawat minimal yang dibutuhkan adalah...",
+                options: ["13 meter", "15 meter", "17 meter", "25 meter"],
+                correctAnswer: 0,
+                explanation: "Menggunakan Teorema Pythagoras:<br>\\(c = \\sqrt{12^2 + 5^2} = \\sqrt{144 + 25} = \\sqrt{169} = 13\\text{ meter}\\)."
+            },
+            {
+                id: 15,
+                topic: "Geometri & Pengukuran",
+                type: "essay",
+                question: "Sebuah kerucut memiliki diameter alas 14 cm (sehingga \\(r = 7\\text{ cm}\\)) dan tinggi 24 cm. Jika \\(\\pi = \\frac{22}{7}\\), berapakah luas permukaan total kerucut tersebut dalam \\(\\text{cm}^2\\)? (Isi angka saja)",
+                correctAnswer: "704",
+                explanation: "Garis pelukis \\(s = \\sqrt{7^2 + 24^2} = \\sqrt{49 + 576} = \\sqrt{625} = 25\\text{ cm}\\).<br>Luas Alas = \\(\\pi r^2 = \\frac{22}{7} \\times 7^2 = 154\\).<br>Luas Selimut = \\(\\pi r s = \\frac{22}{7} \\times 7 \\times 25 = 550\\).<br>Luas Permukaan Total = \\(154 + 550 = 704\\text{ cm}^2\\)."
+            },
+            {
+                id: 16,
+                topic: "Geometri & Pengukuran",
+                type: "tf",
+                question: "Titik \\(A(3, -2)\\) ditranslasikan oleh \\(T = \\begin{pmatrix} -4 \\\\ 5 \\end{pmatrix}\\), kemudian dicerminkan (direfleksikan) terhadap garis \\(y = x\\). Tentukan kebenaran dari pernyataan berikut:",
+                statements: [
+                    { text: "Bayangan titik A setelah translasi pertama adalah A'(-1, 3).", answer: true },
+                    { text: "Bayangan akhir titik A setelah dicerminkan terhadap garis y = x adalah A''(3, -1).", answer: true },
+                    { text: "Jarak antara titik asal A(3,-2) dan titik bayangan hasil translasi A'(-1,3) adalah 5 satuan.", answer: false }
+                ],
+                explanation: "Translasi \\(A'(3-4, -2+5) = A'(-1, 3)\\) (Pernyataan 1 BENAR).<br>Refleksi \\(y=x\\) menukar koordinat: \\(A'' = (3, -1)\\) (Pernyataan 2 BENAR).<br>Jarak \\(AA' = \\sqrt{(-1-3)^2 + (3 - (-2))^2} = \\sqrt{(-4)^2 + 5^2} = \\sqrt{16 + 25} = \\sqrt{41} \\approx 6.4\\neq 5\\) (Pernyataan 3 SALAH)."
+            },
+            {
+                id: 17,
+                topic: "Geometri & Pengukuran",
+                type: "mcq",
+                question: "Sebuah kolam renang berbentuk prisma segi empat memiliki panjang 20 m, lebar 10 m, dan kedalaman rata-rata 1,5 m. Kolam tersebut diisi air menggunakan pompa berdebit 500 liter per menit. Waktu yang diperlukan hingga kolam terisi penuh adalah...",
+                options: ["10 jam", "8 jam", "6 jam", "5 jam"],
+                correctAnswer: 0,
+                explanation: "Volume kolam = \\(20 \\times 10 \\times 1,5 = 300\\text{ m}^3 = 300.000\\text{ liter}\\).<br>Waktu = \\(\\frac{300.000\\text{ liter}}{500\\text{ liter/menit}} = 600\\text{ menit} = 10\\text{ jam}\\)."
+            },
+            {
+                id: 18,
+                topic: "Geometri & Pengukuran",
+                type: "essay",
+                question: "Besar dua sudut saling berpenyiku (komplementer). Jika sudut pertama besarnya \\((3x + 15)^\\circ\\) dan sudut kedua besarnya \\((2x + 10)^\\circ\\), berapakah nilai \\(x\\)? (Isi angka saja)",
+                correctAnswer: "13",
+                explanation: "Dua sudut berpenyiku jumlahnya \\(90^\\circ\\).<br>\\((3x + 15) + (2x + 10) = 90\\)<br>\\(5x + 25 = 90 \\implies 5x = 65 \\implies x = 13\\)."
+            },
+            {
+                id: 19,
+                topic: "Geometri & Pengukuran",
+                type: "tf",
+                question: "Sebuah tabung dan bola padat memiliki jari-jari alas yang sama yaitu \\(r = 6\\text{ cm}\\). Tinggi tabung sama dengan panjang diameter bola tersebut.",
+                statements: [
+                    { text: "Tinggi tabung adalah 12 cm.", answer: true },
+                    { text: "Volume bola tersebut adalah 288π cm³.", answer: true },
+                    { text: "Volume tabung lebih kecil daripada volume bola.", answer: false }
+                ],
+                explanation: "Tinggi tabung \\(t = 2r = 12\\text{ cm}\\) (Pernyataan 1 BENAR).<br>Volume bola = \\(\\frac{4}{3}\\pi r^3 = \\frac{4}{3}\\pi (216) = 288\\pi\\text{ cm}^3\\) (Pernyataan 2 BENAR).<br>Volume tabung = \\(\\pi r^2 t = \\pi (36)(12) = 432\\pi\\text{ cm}^3\\). Jadi volume tabung LEBIH BESAR dari bola (Pernyataan 3 SALAH)."
+            },
+
+            // --- ELEMEN 4: DATA DAN PELUANG (Soal 20-25) ---
+            {
+                id: 20,
+                topic: "Data & Peluang",
+                type: "mcq",
+                question: "Rata-rata nilai ulangan matematika dari 29 siswa adalah 74. Jika nilai seorang siswa susulan bernama Budi dimasukkan, rata-rata nilainya naik menjadi 74,5. Nilai ulangan Budi adalah...",
+                options: ["89", "88", "85", "80"],
+                correctAnswer: 0,
+                explanation: "Total nilai 29 siswa = \\(29 \\times 74 = 2146\\).<br>Total nilai 30 siswa = \\(30 \\times 74,5 = 2235\\).<br>Nilai Budi = \\(2235 - 2146 = 89\\)."
+            },
+            {
+                id: 21,
+                topic: "Data & Peluang",
+                type: "essay",
+                question: "Dalam sebuah kantong terdapat 5 bola merah, 8 bola biru, dan 7 bola kuning. Sebuah bola diambil secara acak dari kantong. Berapakah peluang terambilnya bola berwarna biru? (Tuliskan dalam bentuk pecahan sederhana, contoh: 2/5)",
+                correctAnswer: "2/5",
+                explanation: "Total bola \\(n(S) = 5 + 8 + 7 = 20\\).<br>Jumlah bola biru \\(n(B) = 8\\).<br>Peluang \\(P(B) = \\frac{8}{20} = \\frac{2}{5}\\)."
+            },
+            {
+                id: 22,
+                topic: "Data & Peluang",
+                type: "tf",
+                question: "Data nilai ujian siswa disajikan sebagai berikut: 60, 70, 70, 80, 80, 80, 90, 100. Tentukan kebenaran dari analisis statistik berikut:",
+                statements: [
+                    { text: "Modus dari data nilai ujian tersebut adalah 80.", answer: true },
+                    { text: "Median (nilai tengah) dari data tersebut adalah 75.", answer: false },
+                    { text: "Jangkauan (range) data adalah 40.", answer: true }
+                ],
+                explanation: "Modus = 80 (muncul 3 kali) (Pernyataan 1 BENAR).<br>Data berjumlah 8 (genap). Median = rata-rata data ke-4 dan ke-5 = \\(\\frac{80+80}{2} = 80\\) (Pernyataan 2 SALAH).<br>Jangkauan = \\(100 - 60 = 40\\) (Pernyataan 3 BENAR)."
+            },
+            {
+                id: 23,
+                topic: "Data & Peluang",
+                type: "mcq",
+                question: "Dua buah dadu bermata 6 dilemparkan secara bersamaan sebanyak satu kali. Peluang munculnya mata dadu berjumlah 8 atau berjumlah 11 adalah...",
+                options: [
+                    "\\(\\frac{7}{36}\\)",
+                    "\\(\\frac{5}{36}\\)",
+                    "\\(\\frac{1}{6}\\)",
+                    "\\(\\frac{2}{9}\\)"
+                ],
+                correctAnswer: 0,
+                explanation: "Jumlah 8: (2,6), (3,5), (4,4), (5,3), (6,2) \\(\\rightarrow 5\\) kejadian.<br>Jumlah 11: (5,6), (6,5) \\(\\rightarrow 2\\) kejadian.<br>Total kejadian = \\(5 + 2 = 7\\).<br>Total ruang sampel \\(n(S) = 36\\). Peluang = \\(\\frac{7}{36}\\)."
+            },
+            {
+                id: 24,
+                topic: "Data & Peluang",
+                type: "essay",
+                question: "Dua koin logam dilemparkan bersama-sama sebanyak 200 kali. Frekuensi harapan munculnya sekurang-kurangnya satu angka (A) adalah... kali. (Isi angka saja)",
+                correctAnswer: "150",
+                explanation: "Ruang sampel 2 koin: \\(S = \\{AA, AG, GA, GG\\}\\), \\(n(S) = 4\\).<br>Sekurang-kurangnya 1 angka = \\(\\{AA, AG, GA\\}\\), \\(n(A) = 3\\).<br>Peluang = \\(\\frac{3}{4}\\).<br>Frekuensi harapan = \\(\\frac{3}{4} \\times 200 = 150\\) kali."
+            },
+            {
+                id: 25,
+                topic: "Data & Peluang",
+                type: "tf",
+                question: "Diagram lingkaran penjualan buah di Toko 'Segar' menunjukkan porsi: Apel 30%, Jeruk 25%, Mangga 20%, dan sisanya Buah Naga. Jika total buah yang terjual adalah 200 kg, tentukan kebenaran dari pernyataan berikut:",
+                statements: [
+                    { text: "Persentase penjualan Buah Naga adalah 25%.", answer: true },
+                    { text: "Berat Buah Mangga yang terjual adalah 40 kg.", answer: true },
+                    { text: "Selisih berat penjualan Apel dan Jeruk adalah 15 kg.", answer: false }
+                ],
+                explanation: "Buah Naga = \\(100\\% - (30\\% + 25\\% + 20\\%) = 25\\%\\) (Pernyataan 1 BENAR).<br>Mangga = \\(20\\% \\times 200\\text{ kg} = 40\\text{ kg}\\) (Pernyataan 2 BENAR).<br>Apel = \\(30\\% \\times 200 = 60\\text{ kg}\\). Jeruk = \\(25\\% \\times 200 = 50\\text{ kg}\\). Selisih = \\(60 - 50 = 10\\text{ kg}\\) (Pernyataan 3 SALAH karena tertulis 15 kg)."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // Store user responses
+        let isSubmitted = {}; // Track if question feedback was checked
+        let timerSeconds = 0;
+        let timerInterval = null;
+
+        // Start App
+        window.onload = function() {
+            startTimer();
+            renderNavGrid();
+            loadQuestion(0);
+        };
+
+        // Timer Function
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const hours = String(Math.floor(timerSeconds / 3600)).padStart(2, '0');
+                const minutes = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, '0');
+                const seconds = String(timerSeconds % 60).padStart(2, '0');
+                document.getElementById('timer-display').innerText = `${hours}:${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('nav-grid');
+            grid.innerHTML = '';
+            questionsData.forEach((q, index) => {
+                const btn = document.createElement('button');
+                btn.id = `nav-btn-${index}`;
+                btn.onclick = () => jumpToQuestion(index);
+                btn.className = `h-10 text-xs font-bold rounded-xl transition border flex items-center justify-center ${getNavBtnColor(index)}`;
+                btn.innerText = index + 1;
+                grid.appendChild(btn);
+            });
+            updateProgressText();
+        }
+
+        function getNavBtnColor(index) {
+            if (index === currentQuestionIndex) {
+                return 'bg-indigo-600 text-white border-indigo-600 shadow-md';
+            }
+            if (userAnswers[index] !== undefined && userAnswers[index] !== '') {
+                return 'bg-emerald-50 text-emerald-700 border-emerald-300 font-semibold';
+            }
+            return 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100';
+        }
+
+        function updateProgressText() {
+            const count = Object.keys(userAnswers).filter(k => {
+                const ans = userAnswers[k];
+                if (Array.isArray(ans)) return ans.some(a => a !== null);
+                return ans !== undefined && ans !== '';
+            }).length;
+            document.getElementById('progress-text').innerText = `${count}/25 Terjawab`;
+        }
+
+        function loadQuestion(index) {
+            currentQuestionIndex = index;
+            const q = questionsData[index];
+
+            // Update UI Badges
+            document.getElementById('question-number-badge').innerText = `Soal ${index + 1} dari 25`;
+            document.getElementById('question-topic-badge').innerText = q.topic;
+            
+            let typeText = "Pilihan Ganda";
+            if (q.type === 'essay') typeText = "Isian Singkat";
+            if (q.type === 'tf') typeText = "Pernyataan Sesuai / Tidak Sesuai";
+            document.getElementById('question-type-badge').innerText = typeText;
+
+            // Render Question Text
+            document.getElementById('question-text').innerHTML = q.question;
+
+            // Render Options Container
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            if (q.type === 'mcq') {
+                renderMCQOptions(q, container, index);
+            } else if (q.type === 'essay') {
+                renderEssayInput(q, container, index);
+            } else if (q.type === 'tf') {
+                renderTFMatrix(q, container, index);
+            }
+
+            // Update Explanation Box Visibility
+            renderExplanationBox(index);
+
+            // Update Navigation Button States
+            document.getElementById('prev-btn').disabled = index === 0;
+            document.getElementById('next-btn').innerHTML = index === questionsData.length - 1 ? 
+                'Selesai <i class="fa-solid fa-flag-checkered"></i>' : 
+                'Selanjutnya <i class="fa-solid fa-arrow-right"></i>';
+
+            // Refresh KaTeX Rendering
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body);
+            }
+
+            renderNavGrid();
+        }
+
+        function renderMCQOptions(q, container, qIndex) {
+            q.options.forEach((opt, optIndex) => {
+                const isSelected = userAnswers[qIndex] === optIndex;
+                const btn = document.createElement('div');
+                btn.onclick = () => {
+                    if (!isSubmitted[qIndex]) {
+                        userAnswers[qIndex] = optIndex;
+                        loadQuestion(qIndex);
+                    }
+                };
+                btn.className = `p-4 rounded-xl border-2 transition cursor-pointer flex items-center justify-between ${
+                    isSelected ? 'border-indigo-600 bg-indigo-50/60' : 'border-slate-200 hover:border-slate-300 bg-white'
+                }`;
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
+                            isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'
+                        }">${String.fromCharCode(65 + optIndex)}</span>
+                        <span class="text-sm font-medium text-slate-700">${opt}</span>
+                    </div>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function renderEssayInput(q, container, qIndex) {
+            const val = userAnswers[qIndex] || '';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'space-y-2';
+            wrapper.innerHTML = `
+                <label class="text-xs font-semibold text-slate-500 uppercase">Ketikkan Jawaban Anda:</label>
+                <input type="text" id="essay-input-${qIndex}" value="${val}" ${isSubmitted[qIndex] ? 'disabled' : ''}
+                    oninput="userAnswers[${qIndex}] = this.value.trim(); updateProgressText();"
+                    placeholder="Masukkan jawaban..." 
+                    class="w-full p-3.5 border-2 border-slate-200 rounded-xl focus:border-indigo-600 focus:outline-none text-slate-800 font-medium text-sm transition">
+            `;
+            container.appendChild(wrapper);
+        }
+
+        function renderTFMatrix(q, container, qIndex) {
+            if (!Array.isArray(userAnswers[qIndex])) {
+                userAnswers[qIndex] = new Array(q.statements.length).fill(null);
+            }
+
+            const table = document.createElement('div');
+            table.className = 'overflow-hidden border border-slate-200 rounded-xl bg-white shadow-sm';
+            
+            let tableHTML = `
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold text-xs uppercase">
+                            <th class="p-3.5">Pernyataan</th>
+                            <th class="p-3.5 text-center w-24">Sesuai</th>
+                            <th class="p-3.5 text-center w-28">Tidak Sesuai</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+            `;
+
+            q.statements.forEach((st, stIdx) => {
+                const currentVal = userAnswers[qIndex][stIdx];
+                tableHTML += `
+                    <tr>
+                        <td class="p-3.5 text-slate-700 leading-snug">${st.text}</td>
+                        <td class="p-3.5 text-center">
+                            <input type="radio" name="tf-${qIndex}-${stIdx}" ${currentVal === true ? 'checked' : ''} ${isSubmitted[qIndex] ? 'disabled' : ''}
+                                onclick="setTFAnswer(${qIndex}, ${stIdx}, true)" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        </td>
+                        <td class="p-3.5 text-center">
+                            <input type="radio" name="tf-${qIndex}-${stIdx}" ${currentVal === false ? 'checked' : ''} ${isSubmitted[qIndex] ? 'disabled' : ''}
+                                onclick="setTFAnswer(${qIndex}, ${stIdx}, false)" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            table.innerHTML = tableHTML;
+            container.appendChild(table);
+        }
+
+        function setTFAnswer(qIndex, stIndex, val) {
+            if (isSubmitted[qIndex]) return;
+            userAnswers[qIndex][stIndex] = val;
+            updateProgressText();
+        }
+
+        function submitAnswer() {
+            isSubmitted[currentQuestionIndex] = true;
+            renderExplanationBox(currentQuestionIndex);
+        }
+
+        function renderExplanationBox(qIndex) {
+            const expBox = document.getElementById('explanation-box');
+            if (!isSubmitted[qIndex]) {
+                expBox.classList.add('hidden');
+                return;
+            }
+
+            const q = questionsData[qIndex];
+            const isCorrect = checkAnswerCorrectness(qIndex);
+
+            expBox.classList.remove('hidden');
+            expBox.className = `mt-6 p-5 rounded-2xl border ${
+                isCorrect ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900' : 'bg-rose-50/80 border-rose-200 text-rose-900'
+            }`;
+
+            let statusHeader = isCorrect ? 
+                `<div class="flex items-center gap-2 font-bold text-emerald-700 mb-2"><i class="fa-solid fa-circle-check text-lg"></i> Jawaban Anda Benar!</div>` :
+                `<div class="flex items-center gap-2 font-bold text-rose-700 mb-2"><i class="fa-solid fa-circle-xmark text-lg"></i> Jawaban Anda Belum Tepat</div>`;
+
+            expBox.innerHTML = `
+                ${statusHeader}
+                <div class="text-sm space-y-2 leading-relaxed">
+                    <p class="font-semibold text-slate-800">Pembahasan Detail:</p>
+                    <div class="text-slate-700">${q.explanation}</div>
+                </div>
+            `;
+
+            if (window.renderMathInElement) {
+                renderMathInElement(expBox);
+            }
+        }
+
+        function checkAnswerCorrectness(qIndex) {
+            const q = questionsData[qIndex];
+            const uAns = userAnswers[qIndex];
+
+            if (uAns === undefined || uAns === null || uAns === '') return false;
+
+            if (q.type === 'mcq') {
+                return uAns === q.correctAnswer;
+            } else if (q.type === 'essay') {
+                return String(uAns).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase();
+            } else if (q.type === 'tf') {
+                if (!Array.isArray(uAns)) return false;
+                return q.statements.every((st, idx) => st.answer === uAns[idx]);
+            }
+            return false;
+        }
+
+        // Navigation Controls
+        function navigateQuestion(direction) {
+            const newIndex = currentQuestionIndex + direction;
+            if (newIndex >= 0 && newIndex < questionsData.length) {
+                loadQuestion(newIndex);
+            } else if (newIndex >= questionsData.length) {
+                finishQuizConfirmation();
+            }
+        }
+
+        function jumpToQuestion(index) {
+            loadQuestion(index);
+        }
+
+        function finishQuizConfirmation() {
+            let correctCount = 0;
+            questionsData.forEach((q, idx) => {
+                if (checkAnswerCorrectness(idx)) {
+                    correctCount++;
+                }
+            });
+
+            const score = Math.round((correctCount / questionsData.length) * 100);
+            
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('correct-count').innerText = correctCount;
+            document.getElementById('incorrect-count').innerText = questionsData.length - correctCount;
+
+            let evalMsg = "";
+            if (score >= 85) {
+                evalMsg = "<strong class='text-emerald-700'>Sangat Baik!</strong> Anda telah menguasai kompetensi numerasi dan literasi matematika SMP dengan sangat memuaskan.";
+            } else if (score >= 70) {
+                evalMsg = "<strong class='text-indigo-700'>Baik!</strong> Pemahaman Anda cukup solid, tingkatkan latihan pada beberapa materi yang belum tepat.";
+            } else {
+                evalMsg = "<strong class='text-amber-700'>Perlu Latihan Tambahan!</strong> Pelajari kembali pembahasan di setiap nomor untuk memperdalam pemahaman konsep dasar.";
+            }
+            document.getElementById('evaluation-message').innerHTML = evalMsg;
+
+            document.getElementById('result-modal').classList.remove('hidden');
+        }
+
+        function closeResultModal() {
+            document.getElementById('result-modal').classList.add('hidden');
+        }
+
+        function restartQuiz() {
+            userAnswers = {};
+            isSubmitted = {};
+            timerSeconds = 0;
+            document.getElementById('result-modal').classList.add('hidden');
+            loadQuestion(0);
+        }
+    </script>
+</body>
+</html>
